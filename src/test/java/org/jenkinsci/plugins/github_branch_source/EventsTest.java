@@ -83,6 +83,25 @@ public class EventsTest {
         waitAndAssertReceived(true);
     }
 
+    // TODO - add a test on push event that was filtered
+    @Test
+    public void given_ghPushEventCreated_then_filteredAndNotFired() throws IOException, InterruptedException {
+
+        PushGHEventSubscriber subscriber = new PushGHEventSubscriber();
+
+        firedEventType = SCMEvent.Type.CREATED;
+        ghEvent = callOnEvent(subscriber, "EventsTest/pushEventCreated.json");
+        waitAndAssertReceived(true);
+        // TODO - add new test to check if the event is not fired
+        assertBuildTriggered(false);
+    }
+
+    private void assertBuildTriggered(boolean b) {
+        // TODO - implement method to check if a build is triggered
+        // Can check if there is a SCM listener event fired
+
+    }
+
     @Test
     public void given_ghPushEventDeleted_then_removedHeadEventFired() throws Exception {
         PushGHEventSubscriber subscriber = new PushGHEventSubscriber();
