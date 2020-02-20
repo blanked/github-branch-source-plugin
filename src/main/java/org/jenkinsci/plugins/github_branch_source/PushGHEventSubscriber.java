@@ -31,6 +31,7 @@ import hudson.model.Item;
 import hudson.scm.SCM;
 import java.io.StringReader;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -125,7 +126,8 @@ public class PushGHEventSubscriber extends GHEventsSubscriber {
                     new Object[]{event.getGHEvent(), repoUrl, event.getOrigin()}
             );
             Matcher matcher = REPOSITORY_NAME_PATTERN.matcher(repoUrl);
-            if (matcher.matches()) {
+            // TODO - add check on whether commit size is 1 and if the commit message has pattern
+            if (matcher.matches() && shouldIgnore(p)) {
                 final GitHubRepositoryName changedRepository = GitHubRepositoryName.create(repoUrl);
                 if (changedRepository == null) {
                     LOGGER.log(Level.WARNING, "Malformed repository URL {0}", repoUrl);
@@ -168,6 +170,24 @@ public class PushGHEventSubscriber extends GHEventsSubscriber {
             lr.setThrown(e);
             LOGGER.log(lr);
         }
+    }
+
+    /**
+     * Checks if a payload should be processed and an event be fired
+     * @param push push object
+     * @return true if a payload should be ignore, false if payload should be processed
+     */
+    private boolean shouldIgnore(GHEventPayload.Push push) {
+        // TODO - confirm if the thing being fired is a payload event and not the build.
+
+        List<GHEventPayload.Push.PushCommit> commits = push.getCommits();
+        for (GHEventPayload.Push.PushCommit commit : commits) {
+            String message = commit.getMessage();
+            if (!message.matches("\\[skip-ci]")) {
+                return false;  // if there is any build that requires a build, proceed to build
+            }
+        }
+        return true;
     }
 
     private void fireAfterDelay(final SCMHeadEventImpl e) {

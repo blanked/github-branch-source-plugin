@@ -90,17 +90,9 @@ public class EventsTest {
         PushGHEventSubscriber subscriber = new PushGHEventSubscriber();
 
         firedEventType = SCMEvent.Type.CREATED;
-        ghEvent = callOnEvent(subscriber, "EventsTest/pushEventCreated.json");
+        ghEvent = callOnEvent(subscriber, "EventsTest/pushEventFiltered.json");
         // Payload has a "[skip-ci]" message. Should check for that event
-        waitAndAssertReceived(true);
-        // TODO - add new test to check if the event is not fired
-        assertBuildTriggered(false);
-    }
-
-    private void assertBuildTriggered(boolean b) {
-        // TODO - implement method to check if a build is triggered
-        // Can check if there is a SCM listener event fired
-
+        waitAndAssertReceived(false);
     }
 
     @Test
